@@ -1,5 +1,10 @@
 package config
 
+import (
+	"github.com/joho/godotenv"
+	"os"
+)
+
 // Config representa a configuração da aplicação
 type Config struct {
 	WeatherAPIKey string
@@ -8,8 +13,12 @@ type Config struct {
 
 // NewConfig cria uma nova instância de configuração
 func NewConfig() *Config {
+	if err := godotenv.Load(); err != nil {
+		panic("Erro ao carregar o arquivo .env")
+	}
+	key := os.Getenv("WEATHER_API_KEY")
 	return &Config{
-		WeatherAPIKey: "DUMMY_API_KEY_12345", // Chave fictícia para desenvolvimento
+		WeatherAPIKey: key, // Chave fictícia para desenvolvimento
 		Port:          "8080",
 	}
 }

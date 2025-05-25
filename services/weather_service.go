@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"cepTemp/models"
 )
@@ -25,12 +26,17 @@ func NewWeatherAPIService(apiKey string) *WeatherAPIService {
 }
 
 // GetWeather busca o clima para uma localidade
-func (s *WeatherAPIService) GetWeather(city string) (*models.WeatherResponse, error) {
-	if city == "" {
-		return nil, errors.New("city cannot be empty")
+func (s *WeatherAPIService) GetWeather(localidade, estado string) (*models.WeatherResponse, error) {
+	if localidade == "" {
+		return nil, errors.New("localidade cannot be empty")
 	}
+	localidadeAjustada := strings.ReplaceAll(localidade, " ", "_")
+	estadoAjustado := strings.ReplaceAll(estado, " ", "_")
+	localidade = localidadeAjustada + "_" + estadoAjustado
 
-	url := fmt.Sprintf("%s/current.json?key=%s&q=%s&aqi=no", s.BaseURL, s.APIKey, city)
+	url := fmt.Sprintf("%s/current.json?key=%s&q=%s&aqi=no", s.BaseURL, s.APIKey, localidade)
+	fmt.Println(url)
+
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -42,8 +48,12 @@ func (s *WeatherAPIService) GetWeather(city string) (*models.WeatherResponse, er
 		return nil, err
 	}
 
+	fmt.Println("Body:")
+	fmt.Println(body)
+
 	var weatherAPIResponse models.WeatherAPIResponse
 	if err := json.Unmarshal(body, &weatherAPIResponse); err != nil {
+		fmt.Println(err.Error())
 		return nil, err
 	}
 

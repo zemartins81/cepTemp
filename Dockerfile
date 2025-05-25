@@ -1,18 +1,22 @@
 FROM golang:1.24-alpine AS builder
 
-WORKDIR /app
+RUN apk update && apk add --no-cache git ca-certificates
+
+WORKDIR /build
 
 # Copiar arquivos de dependências
 COPY go.mod go.sum ./
+
+ENV GOPROXY=https://proxy.golang.org,direct
 
 # Baixar dependências
 RUN go mod download
 
 # Copiar o código fonte
-COPY . .
+COPY . ./
 
 # Compilar a aplicação
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o weather-cep-api .
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /build/app .
 
 # Imagem final
 FROM alpine:latest
@@ -20,13 +24,10 @@ FROM alpine:latest
 WORKDIR /app
 
 # Copiar o binário compilado
-COPY --from=builder /app/weather-cep-api .
+COPY --from=builder /build/app /usr/local/bin/app
 
 # Expor a porta
 EXPOSE 8080
 
-# Definir variável de ambiente para a chave da API
-ENV WEATHER_API_KEY=""
-
 # Executar a aplicação
-CMD ["./weather-cep-api"]
+CMD ["/usr/local/bin/app"]

@@ -75,7 +75,7 @@ func (h *WeatherHandler) GetWeatherByCEP(c *gin.Context) {
 	}
 
 	// Busca o clima para a localidade
-	weather, err := h.weatherService.GetWeather(location.Localidade)
+	weather, err := h.weatherService.GetWeather(location.Localidade, location.Estado)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
 			Message: "error fetching weather data",
