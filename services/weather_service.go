@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"cepTemp/models"
@@ -20,7 +21,7 @@ type WeatherAPIService struct {
 // NewWeatherAPIService cria uma nova instância do serviço WeatherAPI
 func NewWeatherAPIService(apiKey string) *WeatherAPIService {
 	return &WeatherAPIService{
-		BaseURL: "https://api.weatherapi.com/v1",
+		BaseURL: "http://api.weatherapi.com/v1",
 		APIKey:  apiKey,
 	}
 }
@@ -30,31 +31,43 @@ func (s *WeatherAPIService) GetWeather(localidade, estado string) (*models.Weath
 	if localidade == "" {
 		return nil, errors.New("localidade cannot be empty")
 	}
+
 	localidadeAjustada := strings.ReplaceAll(localidade, " ", "_")
 	estadoAjustado := strings.ReplaceAll(estado, " ", "_")
 	localidade = localidadeAjustada + "_" + estadoAjustado
 
-	url := fmt.Sprintf("%s/current.json?key=%s&q=%s&aqi=no", s.BaseURL, s.APIKey, localidade)
-	fmt.Println(url)
+	// Use url.QueryEscape para encoding adequado
+	localidadeEncoded := url.QueryEscape(localidade)
+	urlStr := fmt.Sprintf("%s/current.json?key=%s&q=%s&aqi=no", s.BaseURL, s.APIKey, localidadeEncoded)
 
-	resp, err := http.Get(url)
+	resp, err := http.Get(urlStr)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("erro na requisição HTTP: %w", err)
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
+	// Verificar status HTTP
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("API retornou status %d: %s", resp.StatusCode, string(body))
 	}
 
-	fmt.Println("Body:")
-	fmt.Println(body)
+	// Ler o body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("erro ao ler response body: %w", err)
+	}
+
+	// Verificar se o body não está vazio
+	if len(body) == 0 {
+		return nil, errors.New("response body está vazio")
+	}
 
 	var weatherAPIResponse models.WeatherAPIResponse
 	if err := json.Unmarshal(body, &weatherAPIResponse); err != nil {
-		fmt.Println(err.Error())
-		return nil, err
+		fmt.Printf("Erro no JSON Unmarshal: %v\n", err)
+		fmt.Printf("Body recebido: %s\n", string(body))
+		return nil, fmt.Errorf("erro ao fazer parse do JSON: %w", err)
 	}
 
 	// Converte as temperaturas
