@@ -28,7 +28,8 @@ go run main.go
 1. Configure a chave da API no arquivo `.env` ou diretamente no comando:
 
 ```bash
-WEATHER_API_KEY=sua_chave_api docker-compose up
+WEATHER_API_KEY=sua_chave_api 
+docker-compose up
 ```
 
 ## Endpoints da API
