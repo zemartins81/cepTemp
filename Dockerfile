@@ -13,7 +13,7 @@ ENV GOPROXY=https://proxy.golang.org,direct
 RUN go mod download
 
 # Copiar o código fonte
-COPY . ./
+COPY . .
 
 # Compilar a aplicação
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /build/app .
@@ -22,6 +22,9 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /build/app .
 FROM alpine:latest
 
 WORKDIR /app
+
+# Copiar o arquivo .env para o container
+COPY .env ./
 
 # Copiar o binário compilado
 COPY --from=builder /build/app /usr/local/bin/app

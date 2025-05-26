@@ -26,15 +26,19 @@ import (
 func main() {
 	// Carrega configurações
 	cfg := config.NewConfig()
-
-	// Verifica se existe uma chave de API definida como variável de ambiente
-	if apiKey := os.Getenv("WEATHER_API_KEY"); apiKey != "" {
-		cfg.WeatherAPIKey = apiKey
+	if cfg == nil {
+		log.Fatal("Erro ao carregar as configurações")
+		os.Exit(1)
 	}
-
-	// Verifica se existe uma porta definida como variável de ambiente
-	if port := os.Getenv("PORT"); port != "" {
-		cfg.Port = port
+	// Verifica se a chave da API de clima está configurada
+	if cfg.GetWeatherAPIKey() == "" {
+		log.Fatal("A chave da API de clima não está configurada. Verifique o arquivo .env.")
+		os.Exit(1)
+	}
+	// Verifica se a porta está configurada
+	if cfg.GetPort() == "" {
+		log.Fatal("A porta do servidor não está configurada. Verifique o arquivo .env.")
+		os.Exit(1)
 	}
 
 	// Configura o router

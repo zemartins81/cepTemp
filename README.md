@@ -13,6 +13,9 @@ API em Go que recebe um CEP, identifica a cidade e retorna o clima atual (temper
 
 ## Instalação e Execução
 
+### API NO GCP
+https://ceptemp-960436301750.southamerica-east1.run.app
+
 ### Execução Local
 
 1. Clone o repositório

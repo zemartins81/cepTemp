@@ -1,8 +1,9 @@
 package config
 
 import (
-	"github.com/joho/godotenv"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 // Config representa a configuração da aplicação
@@ -17,9 +18,13 @@ func NewConfig() *Config {
 		panic("Erro ao carregar o arquivo .env")
 	}
 	key := os.Getenv("WEATHER_API_KEY")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080" // Define uma porta padrão se não estiver configurada
+	}
 	return &Config{
-		WeatherAPIKey: key, // Chave fictícia para desenvolvimento
-		Port:          "8080",
+		WeatherAPIKey: key,
+		Port:          port,
 	}
 }
 
